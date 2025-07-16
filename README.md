@@ -34,3 +34,23 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Running as a Desktop App (Electron)
+
+### Development
+
+```
+npm run electron:dev
+```
+This will start the Next.js app and open it in an Electron window.
+
+### Production Build (macOS & Windows)
+
+```
+npm run electron:build
+```
+This will build the Next.js app, export it, and package it as a desktop app for your OS (macOS DMG/ZIP, Windows NSIS/ZIP) in the `dist/` folder.
+
+---
+
+If you want to build for a different OS, see [electron-builder docs](https://www.electron.build/multi-platform-build) for cross-compilation options.
