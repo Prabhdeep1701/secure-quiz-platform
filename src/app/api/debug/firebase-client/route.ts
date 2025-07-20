@@ -14,7 +14,7 @@ export async function GET() {
 
     // Validate the configuration
     const missingFields = Object.entries(clientConfig)
-      .filter(([key, value]) => !value)
+      .filter(([, value]) => !value)
       .map(([key]) => key);
 
     if (missingFields.length > 0) {

@@ -24,33 +24,9 @@ export default function QuizAttempt({ quiz, onClose }: QuizAttemptProps) {
   const [answers, setAnswers] = useState<Record<number, any>>({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const router = useRouter();
+  // const router = useRouter();
   const { showToast } = useToast();
   const [autoSubmitted, setAutoSubmitted] = useState(false);
-
-  // Auto-submit if window loses focus in kiosk mode
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.electronAPI?.onWindowBlurred) {
-      const handler = () => {
-        if (!submitting && !success) {
-          setAutoSubmitted(true);
-          showToast('Quiz auto-submitted because you switched windows.', 'error');
-          handleSubmit();
-        }
-      };
-      window.electronAPI?.onWindowBlurred?.(handler);
-      return () => {
-        window.electronAPI?.offWindowBlurred?.(handler);
-      };
-    }
-  }, [submitting, success, showToast]);
-
-  const handleAnswerChange = (questionIndex: number, value: any) => {
-    setAnswers((prev: Record<number, any>) => ({
-      ...prev,
-      [questionIndex]: value
-    }));
-  };
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -84,12 +60,42 @@ export default function QuizAttempt({ quiz, onClose }: QuizAttemptProps) {
         showToast(errorData.error || 'Failed to submit quiz', 'error');
         // setError(errorData.error || 'Failed to submit quiz');
       }
-    } catch (err) {
+    } catch (_err) {
       showToast('Failed to submit quiz', 'error');
       // setError('Failed to submit quiz');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Auto-submit if window loses focus in kiosk mode
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.electronAPI?.onWindowBlurred) {
+      const handler = () => {
+        if (!submitting && !success) {
+          setAutoSubmitted(true);
+          showToast('Quiz auto-submitted because you switched windows.', 'error');
+          handleSubmit();
+        }
+      };
+      window.electronAPI?.onWindowBlurred?.(handler);
+      return () => {
+        window.electronAPI?.offWindowBlurred?.(handler);
+      };
+    }
+  }, [submitting, success, showToast, handleSubmit]);
+
+  useEffect(() => {
+    if (quiz && quiz.questions.length > 0) {
+      setAnswers(Array(quiz.questions.length).fill(null));
+    }
+  }, [quiz, handleSubmit]);
+
+  const handleAnswerChange = (questionIndex: number, value: any) => {
+    setAnswers((prev: Record<number, any>) => ({
+      ...prev,
+      [questionIndex]: value
+    }));
   };
 
   if (success) {

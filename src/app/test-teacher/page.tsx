@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '@/components/ui/AuthContext';
 import { useRouter } from 'next/navigation';
 import { getIdToken } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+// import { auth } from '@/lib/firebase';
 
 export default function TestTeacherPage() {
   const { user, userRole, loading, signUpWithEmail } = useAuth();

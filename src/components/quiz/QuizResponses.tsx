@@ -87,7 +87,7 @@ export default function QuizResponses({ responses, quiz, onClose }: QuizResponse
       } else {
         alert('Failed to save grade');
       }
-    } catch (error) {
+    } catch (_error) {
       alert('Failed to save grade');
     } finally {
       setLoading(false);

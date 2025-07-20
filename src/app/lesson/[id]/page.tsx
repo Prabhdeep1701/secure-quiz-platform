@@ -9,7 +9,7 @@ export default function LessonViewerPage({ params }: { params: Promise<{ id: str
   const [lesson, setLesson] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [startTime, setStartTime] = useState<number>(Date.now());
+  const [startTime] = useState<number>(Date.now());
   const [hasTracked, setHasTracked] = useState(false);
   const [lessonId, setLessonId] = useState<string>("");
 
@@ -27,7 +27,7 @@ export default function LessonViewerPage({ params }: { params: Promise<{ id: str
       return;
     }
     fetchLesson();
-  }, [user, userRole, authLoading, lessonId, router]);
+  }, [user, userRole, authLoading, lessonId, router, fetchLesson]);
 
   async function fetchLesson() {
     setLoading(true);

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 interface LessonAnalyticsProps {
   lessonId: string;
@@ -25,16 +25,10 @@ interface AnalyticsData {
   };
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
 export default function LessonAnalytics({ lessonId, onClose }: LessonAnalyticsProps) {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    fetchAnalytics();
-  }, [lessonId]);
 
   const fetchAnalytics = async () => {
     try {
@@ -46,12 +40,16 @@ export default function LessonAnalytics({ lessonId, onClose }: LessonAnalyticsPr
       } else {
         setError('Failed to load analytics');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load analytics');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [lessonId]);
 
   if (loading) return <div className="p-4">Loading analytics...</div>;
   if (error) return <div className="p-4 text-red-600">{error}</div>;

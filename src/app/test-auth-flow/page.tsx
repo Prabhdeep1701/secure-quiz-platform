@@ -1,7 +1,6 @@
 "use client";
 import { useState } from 'react';
 import { useAuth } from '@/components/ui/AuthContext';
-import { auth } from '@/lib/firebase';
 import { getIdToken } from 'firebase/auth';
 
 export default function TestAuthFlowPage() {

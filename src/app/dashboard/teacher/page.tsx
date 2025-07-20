@@ -17,7 +17,7 @@ export default function TeacherDashboard() {
   const { user, userRole, loading: authLoading, signOut } = useAuth();
   const router = useRouter();
   const [quizzes, setQuizzes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showBuilder, setShowBuilder] = useState(false);
   const [editQuiz, setEditQuiz] = useState<any>(null);

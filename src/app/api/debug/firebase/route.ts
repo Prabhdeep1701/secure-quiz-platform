@@ -14,7 +14,7 @@ export async function GET() {
 
     // Check if all required config values are present
     const missingConfig = Object.entries(firebaseConfig)
-      .filter(([key, value]) => !value)
+      .filter(([, value]) => !value)
       .map(([key]) => key);
 
     if (missingConfig.length > 0) {

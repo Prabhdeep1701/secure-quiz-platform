@@ -50,7 +50,7 @@ export default function LessonEditor({ lesson, onClose, onSave }: LessonEditorPr
       } else {
         alert('Failed to save lesson');
       }
-    } catch (error) {
+    } catch (_error) {
       alert('Failed to save lesson');
     } finally {
       setLoading(false);
