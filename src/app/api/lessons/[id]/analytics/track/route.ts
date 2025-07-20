@@ -1,14 +1,11 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextResponse, NextRequest } from 'next/server';
+import { requireAuth } from '@/lib/auth-middleware';
 import { db } from '@/lib/firebase-admin';
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== 'Student') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireAuth(req, ['Student']);
+    if (user instanceof NextResponse) return user; // Error response
 
     const { timeSpent, completed } = await req.json();
     const { id } = await params;
@@ -53,7 +50,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       analyticsData = analyticsDoc.data() || {};
     }
 
-    const studentId = (session.user as any).id;
+    const studentId = user.uid;
     
     // Check if this is a new view or an update
     const views = analyticsData?.views || [];
