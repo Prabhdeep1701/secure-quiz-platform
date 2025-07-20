@@ -1,14 +1,11 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextResponse, NextRequest } from 'next/server';
+import { requireAuth } from '@/lib/auth-middleware';
 import { db } from '@/lib/firebase-admin';
 
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== 'Teacher') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireAuth(req, ['Student']);
+    if (user instanceof NextResponse) return user; // Error response
 
     const { id } = await params;
     
@@ -21,7 +18,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
     
     const lessonData = lessonDoc.data();
-    if (!lessonData || lessonData.author !== (session.user as any).id) {
+    if (!lessonData || lessonData.author !== user.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -82,7 +79,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       }
     });
   } catch (error) {
-    console.error('GET /api/lessons/[id]/analytics error:', error);
+    console.error('POST /api/lessons/[id]/analytics error:', error);
     return NextResponse.json({ 
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'

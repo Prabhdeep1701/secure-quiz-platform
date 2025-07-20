@@ -1,19 +1,16 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextResponse, NextRequest } from 'next/server';
+import { requireAuth } from '@/lib/auth-middleware';
 import { db } from '@/lib/firebase-admin';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== 'Teacher') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireAuth(req, ['Teacher']);
+    if (user instanceof NextResponse) return user; // Error response
 
     // Get all lessons by the teacher
     const lessonsRef = db.collection('lessons');
     const lessonsSnapshot = await lessonsRef
-      .where('author', '==', (session.user as any).id)
+      .where('author', '==', user.id)
       .get();
     
     const lessons = lessonsSnapshot.docs.map(doc => ({
