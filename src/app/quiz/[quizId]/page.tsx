@@ -9,6 +9,8 @@ declare global {
     electronAPI?: {
       enterKiosk: () => void;
       exitKiosk: () => void;
+      onWindowBlurred?: (callback: () => void) => void;
+      offWindowBlurred?: (callback: () => void) => void;
     };
   }
 }
@@ -22,7 +24,7 @@ export default function QuizAttemptPage({ params }: { params: Promise<{ quizId: 
   const [attemptStarted, setAttemptStarted] = useState(false);
   const unwrappedParams = React.use(params);
 
-  const fetchQuiz = useCallback(() => {
+  const fetchQuiz = useCallback(async () => {
     setLoading(true);
     setError("");
     const res = await fetch(`/api/quizzes/${unwrappedParams.quizId}`);
