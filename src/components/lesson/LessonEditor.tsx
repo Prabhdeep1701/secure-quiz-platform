@@ -1,49 +1,57 @@
 "use client";
-import React, { useState } from 'react';
-import { useToast } from '@/components/ui/ToastContext';
+import { useState, useEffect } from 'react';
+import { authenticatedFetch } from '@/lib/api-client';
 
 interface LessonEditorProps {
-  lesson: any;
+  lesson?: any;
   onClose: () => void;
   onSave: () => void;
 }
 
 export default function LessonEditor({ lesson, onClose, onSave }: LessonEditorProps) {
-  const [title, setTitle] = useState(lesson?.title || '');
-  const [description, setDescription] = useState(lesson?.description || '');
-  const [content, setContent] = useState(lesson?.content || '');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
-  const { showToast } = useToast();
+
+  useEffect(() => {
+    if (lesson) {
+      setTitle(lesson.title || '');
+      setDescription(lesson.description || '');
+      setContent(lesson.content || '');
+    }
+  }, [lesson]);
 
   const handleSave = async () => {
     if (!title.trim() || !content.trim()) {
-      showToast('Title and content are required', 'error');
+      alert('Title and content are required');
       return;
     }
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/lessons/${lesson._id}`, {
-        method: 'PUT',
+      const url = lesson ? `/api/lessons/${lesson.id}` : '/api/lessons';
+      const method = lesson ? 'PUT' : 'POST';
+      
+      const res = await authenticatedFetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
           description,
           content,
-          status: lesson.status,
+          status: 'draft'
         }),
       });
 
       if (res.ok) {
-        showToast('Lesson updated successfully!', 'success');
         onSave();
         onClose();
       } else {
-        const error = await res.json();
-        showToast(error.error || 'Failed to update lesson', 'error');
+        alert('Failed to save lesson');
       }
     } catch (error) {
-      showToast('Failed to update lesson', 'error');
+      alert('Failed to save lesson');
     } finally {
       setLoading(false);
     }

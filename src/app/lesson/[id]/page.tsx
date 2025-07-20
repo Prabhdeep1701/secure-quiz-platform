@@ -1,26 +1,33 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/ui/AuthContext";
 import { useRouter } from "next/navigation";
 
-export default function LessonViewerPage({ params }: { params: { id: string } }) {
-  const { data: session, status } = useSession();
+export default function LessonViewerPage({ params }: { params: Promise<{ id: string }> }) {
+  const { user, userRole, loading: authLoading } = useAuth();
   const router = useRouter();
   const [lesson, setLesson] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [startTime, setStartTime] = useState<number>(Date.now());
   const [hasTracked, setHasTracked] = useState(false);
+  const [lessonId, setLessonId] = useState<string>("");
 
   useEffect(() => {
-    if (status === "loading") return;
-    if (!session || !(session.user && (session.user as any).role === "Student")) {
+    // Resolve the params promise
+    params.then((resolvedParams) => {
+      setLessonId(resolvedParams.id);
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (authLoading || !lessonId) return;
+    if (!user || userRole !== "Student") {
       router.replace("/auth/signin");
       return;
     }
     fetchLesson();
-    // eslint-disable-next-line
-  }, [session, status]);
+  }, [user, userRole, authLoading, lessonId, router]);
 
   async function fetchLesson() {
     setLoading(true);
@@ -28,7 +35,7 @@ export default function LessonViewerPage({ params }: { params: { id: string } })
     const res = await fetch(`/api/student/lessons`);
     if (res.ok) {
       const data = await res.json();
-      const foundLesson = data.lessons.find((l: any) => l._id === params.id);
+      const foundLesson = data.lessons.find((l: any) => l.id === lessonId);
       if (foundLesson) {
         setLesson(foundLesson);
         // Track lesson view
@@ -47,7 +54,7 @@ export default function LessonViewerPage({ params }: { params: { id: string } })
     
     try {
       const timeSpent = Math.floor((Date.now() - startTime) / 1000);
-      await fetch(`/api/lessons/${params.id}/analytics/track`, {
+      await fetch(`/api/lessons/${lessonId}/analytics/track`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ timeSpent, completed: false }),
@@ -61,7 +68,7 @@ export default function LessonViewerPage({ params }: { params: { id: string } })
   const trackLessonCompletion = async () => {
     try {
       const timeSpent = Math.floor((Date.now() - startTime) / 1000);
-      await fetch(`/api/lessons/${params.id}/analytics/track`, {
+      await fetch(`/api/lessons/${lessonId}/analytics/track`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ timeSpent, completed: true }),
@@ -71,7 +78,7 @@ export default function LessonViewerPage({ params }: { params: { id: string } })
     }
   };
 
-  if (status === "loading" || !session || !(session.user && (session.user as any).role === "Student")) {
+  if (authLoading || !user || userRole !== "Student") {
     return <div className="p-8">Loading...</div>;
   }
   if (loading) return <div className="p-8">Loading lesson...</div>;

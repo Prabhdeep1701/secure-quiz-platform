@@ -17,7 +17,7 @@ interface OverviewData {
     recentViews: number;
   };
   topLessons: Array<{
-    _id: string;
+    id: string;
     title: string;
     status: string;
     totalViews: number;
@@ -26,7 +26,7 @@ interface OverviewData {
     completionRate: number;
   }>;
   lessonsWithAnalytics: Array<{
-    _id: string;
+    id: string;
     title: string;
     status: string;
     totalViews: number;
@@ -128,7 +128,7 @@ export default function AnalyticsOverview({ onViewLessonAnalytics }: AnalyticsOv
           <div>
             <div className="space-y-3">
               {topLessons.map((lesson, index) => (
-                <div key={lesson._id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                <div key={lesson.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">
                       {index + 1}
@@ -141,7 +141,7 @@ export default function AnalyticsOverview({ onViewLessonAnalytics }: AnalyticsOv
                     </div>
                   </div>
                   <button
-                    onClick={() => onViewLessonAnalytics(lesson._id)}
+                    onClick={() => onViewLessonAnalytics(lesson.id)}
                     className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                   >
                     View Details
@@ -174,7 +174,7 @@ export default function AnalyticsOverview({ onViewLessonAnalytics }: AnalyticsOv
                 .filter(lesson => lesson.status === 'published')
                 .sort((a, b) => b.uniqueViews - a.uniqueViews)
                 .map((lesson) => (
-                  <tr key={lesson._id} className="border-b">
+                  <tr key={lesson.id} className="border-b">
                     <td className="py-2 font-medium">{lesson.title}</td>
                     <td className="py-2">
                       <span className={`px-2 py-1 rounded text-xs ${
@@ -189,7 +189,7 @@ export default function AnalyticsOverview({ onViewLessonAnalytics }: AnalyticsOv
                     <td className="py-2">{lesson.completionRate.toFixed(1)}%</td>
                     <td className="py-2">
                       <button
-                        onClick={() => onViewLessonAnalytics(lesson._id)}
+                        onClick={() => onViewLessonAnalytics(lesson.id)}
                         className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                       >
                         View Analytics

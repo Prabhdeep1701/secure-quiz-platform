@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/ui/AuthContext";
 import { useRouter } from "next/navigation";
 import QuizAttempt from "@/components/quiz/QuizAttempt";
 
@@ -14,26 +14,22 @@ declare global {
 }
 
 export default function QuizAttemptPage({ params }: { params: Promise<{ quizId: string }> }) {
-  const { data: session, status } = useSession();
+  const { user, userRole, loading: authLoading } = useAuth();
   const router = useRouter();
   const [quiz, setQuiz] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [attemptStarted, setAttemptStarted] = useState(false);
   const unwrappedParams = React.use(params);
 
   useEffect(() => {
-    if (status === "loading") return;
-    if (!session || !(session.user && (session.user as any).role === "Student")) {
+    if (authLoading) return;
+    if (!user || userRole !== "Student") {
       router.replace("/auth/signin");
       return;
     }
     fetchQuiz();
-    // Trigger kiosk mode if available
-    if (typeof window !== 'undefined' && window.electronAPI?.enterKiosk) {
-      window.electronAPI.enterKiosk();
-    }
-    // eslint-disable-next-line
-  }, [session, status]);
+  }, [user, userRole, authLoading, router]);
 
   async function fetchQuiz() {
     setLoading(true);
@@ -48,7 +44,23 @@ export default function QuizAttemptPage({ params }: { params: Promise<{ quizId: 
     setLoading(false);
   }
 
-  if (status === "loading" || !session || !(session.user && (session.user as any).role === "Student")) {
+  const handleStartAttempt = () => {
+    setAttemptStarted(true);
+    if (typeof window !== 'undefined' && window.electronAPI?.enterKiosk) {
+      window.electronAPI.enterKiosk();
+    }
+  };
+
+  const handleClose = () => {
+    // Exit kiosk mode if available
+    if (typeof window !== 'undefined' && window.electronAPI?.exitKiosk) {
+      window.electronAPI.exitKiosk();
+    }
+    // Redirect back to student dashboard
+    router.push('/dashboard/student');
+  };
+
+  if (authLoading || !user || userRole !== "Student") {
     return <div className="p-8">Loading...</div>;
   }
   if (loading) return <div className="p-8">Loading quiz...</div>;
@@ -57,7 +69,20 @@ export default function QuizAttemptPage({ params }: { params: Promise<{ quizId: 
 
   return (
     <main className="p-8 max-w-2xl mx-auto">
-      <QuizAttempt quiz={quiz} quizId={unwrappedParams.quizId} />
+      {!attemptStarted ? (
+        <div className="flex flex-col items-center justify-center gap-6">
+          <h2 className="text-2xl font-bold mb-4">{quiz.title}</h2>
+          {quiz.description && <div className="mb-4 text-gray-600">{quiz.description}</div>}
+          <button
+            className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
+            onClick={handleStartAttempt}
+          >
+            Attempt Quiz
+          </button>
+        </div>
+      ) : (
+        <QuizAttempt quiz={quiz} onClose={handleClose} />
+      )}
     </main>
   );
 } 

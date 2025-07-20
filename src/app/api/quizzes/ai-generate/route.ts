@@ -1,15 +1,12 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextResponse, NextRequest } from 'next/server';
+import { requireAuth } from '@/lib/auth-middleware';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'Teacher') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+export async function POST(req: NextRequest) {
+  const user = await requireAuth(req, ['Teacher']);
+  if (user instanceof NextResponse) return user; // Error response
 
   try {
     const { prompt } = await req.json();

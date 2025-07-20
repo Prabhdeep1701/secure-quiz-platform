@@ -1,40 +1,75 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import dbConnect from '@/lib/db';
-import Lesson from '@/models/Lesson';
+import { NextResponse, NextRequest } from 'next/server';
+import { requireAuth } from '@/lib/auth-middleware';
+import { db } from '@/lib/firebase-admin';
 
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'Teacher') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const user = await requireAuth(req, ['Teacher']);
+    if (user instanceof NextResponse) return user; // Error response
 
-  const { title, description, content, status } = await req.json();
-  await dbConnect();
-  const { id } = await params;
-  const lesson = await Lesson.findOneAndUpdate(
-    { _id: id, author: (session.user as any).id },
-    { title, description, content, status },
-    { new: true }
-  );
-  if (!lesson) {
-    return NextResponse.json({ error: 'Lesson not found or unauthorized' }, { status: 404 });
+    const { title, description, content, status } = await req.json();
+    const { id } = await params;
+    
+    const lessonRef = db.collection('lessons').doc(id);
+    const lessonDoc = await lessonRef.get();
+    
+    if (!lessonDoc.exists) {
+      return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
+    }
+    
+    const lessonData = lessonDoc.data();
+    if (lessonData?.author !== user.uid) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    await lessonRef.update({
+      title,
+      description,
+      content,
+      status,
+      updatedAt: new Date(),
+    });
+    
+    const updatedDoc = await lessonRef.get();
+    const lesson = { id: updatedDoc.id, ...updatedDoc.data() };
+    
+    return NextResponse.json({ lesson });
+  } catch (error) {
+    console.error('PUT /api/lessons/[id] error:', error);
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
-  return NextResponse.json({ lesson });
 }
 
-export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'Teacher') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const user = await requireAuth(req, ['Teacher']);
+    if (user instanceof NextResponse) return user; // Error response
 
-  await dbConnect();
-  const { id } = await params;
-  const lesson = await Lesson.findOneAndDelete({ _id: id, author: (session.user as any).id });
-  if (!lesson) {
-    return NextResponse.json({ error: 'Lesson not found or unauthorized' }, { status: 404 });
+    const { id } = await params;
+    
+    const lessonRef = db.collection('lessons').doc(id);
+    const lessonDoc = await lessonRef.get();
+    
+    if (!lessonDoc.exists) {
+      return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
+    }
+    
+    const lessonData = lessonDoc.data();
+    if (lessonData?.author !== user.uid) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    await lessonRef.delete();
+    
+    return NextResponse.json({ message: 'Lesson deleted' });
+  } catch (error) {
+    console.error('DELETE /api/lessons/[id] error:', error);
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
-  return NextResponse.json({ message: 'Lesson deleted' });
 } 

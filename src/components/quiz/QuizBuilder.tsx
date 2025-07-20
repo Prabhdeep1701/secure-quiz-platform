@@ -122,7 +122,7 @@ export default function QuizBuilder({ quiz, onClose }: QuizBuilderProps) {
     setLoading(true);
     const payload = { title, description, questions, status };
     const method = quiz ? 'PUT' : 'POST';
-    const url = quiz ? `/api/quizzes/${quiz._id}` : '/api/quizzes';
+    const url = quiz ? `/api/quizzes/${quiz.id}` : '/api/quizzes';
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },

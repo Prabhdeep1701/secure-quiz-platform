@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { authenticatedFetch } from "@/lib/api-client";
 
 interface AIQuizBuilderProps {
   onClose: () => void;
@@ -23,7 +24,7 @@ export default function AIQuizBuilder({ onClose, onSave }: AIQuizBuilderProps) {
     setError("");
 
     try {
-      const res = await fetch("/api/quizzes/ai-generate", {
+      const res = await authenticatedFetch("/api/quizzes/ai-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),

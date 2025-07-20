@@ -1,5 +1,5 @@
 "use client";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/ui/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import QuizList from "@/components/quiz/QuizList";
@@ -11,13 +11,14 @@ import LessonList from "@/components/lesson/LessonList";
 import LessonEditor from "@/components/lesson/LessonEditor";
 import AnalyticsOverview from "@/components/analytics/AnalyticsOverview";
 import LessonAnalytics from "@/components/analytics/LessonAnalytics";
-import { signOut } from "next-auth/react";
+import { authenticatedFetch } from "@/lib/api-client";
 
 export default function TeacherDashboard() {
-  const { data: session, status } = useSession();
+  const { user, userRole, loading: authLoading, signOut } = useAuth();
   const router = useRouter();
   const [quizzes, setQuizzes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [showBuilder, setShowBuilder] = useState(false);
   const [editQuiz, setEditQuiz] = useState<any>(null);
   const [message, setMessage] = useState("");
@@ -40,30 +41,64 @@ export default function TeacherDashboard() {
   const [activeTab, setActiveTab] = useState<'quizzes' | 'lessons' | 'analytics'>('quizzes');
   const [showLessonAnalytics, setShowLessonAnalytics] = useState(false);
   const [selectedLessonId, setSelectedLessonId] = useState<string>('');
+  const [cleaningUp, setCleaningUp] = useState(false);
 
   useEffect(() => {
-    if (status === "loading") return;
-    if (!session || !(session.user && (session.user as any).role === "Teacher")) {
-      router.replace("/auth/signin");
+    console.log('Teacher dashboard useEffect:', { user: !!user, userRole, authLoading });
+    if (authLoading) return;
+    if (!user || userRole !== "Teacher") {
+      console.log('Redirecting to signin - User:', !!user, 'Role:', userRole);
+      // Temporary: Add a delay to see if role gets set
+      setTimeout(() => {
+        console.log('After delay - User:', !!user, 'Role:', userRole);
+        if (!user || userRole !== "Teacher") {
+          router.replace("/auth/signin");
+        }
+      }, 2000);
     } else {
+      console.log('Loading teacher dashboard data');
       fetchQuizzes();
       fetchLessons();
     }
-    // eslint-disable-next-line
-  }, [session, status]);
+  }, [user, userRole, authLoading, router]);
 
   async function fetchQuizzes() {
     setLoading(true);
-    const res = await fetch("/api/quizzes");
-    const data = await res.json();
-    setQuizzes(data.quizzes || []);
-    setLoading(false);
+    try {
+      const res = await authenticatedFetch("/api/quizzes");
+      if (!res.ok) {
+        console.error('Failed to fetch quizzes:', res.status, res.statusText);
+        const errorData = await res.json().catch(() => ({}));
+        console.error('Error details:', errorData);
+        setQuizzes([]);
+        return;
+      }
+      const data = await res.json();
+      setQuizzes(data.quizzes || []);
+    } catch (error) {
+      console.error('Error fetching quizzes:', error);
+      setQuizzes([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function fetchLessons() {
-    const res = await fetch("/api/lessons");
-    const data = await res.json();
-    setLessons(data.lessons || []);
+    try {
+      const res = await authenticatedFetch("/api/lessons");
+      if (!res.ok) {
+        console.error('Failed to fetch lessons:', res.status, res.statusText);
+        const errorData = await res.json().catch(() => ({}));
+        console.error('Error details:', errorData);
+        setLessons([]);
+        return;
+      }
+      const data = await res.json();
+      setLessons(data.lessons || []);
+    } catch (error) {
+      console.error('Error fetching lessons:', error);
+      setLessons([]);
+    }
   }
 
   const handleCreate = () => {
@@ -77,13 +112,17 @@ export default function TeacherDashboard() {
   };
 
   const handleDelete = async (quiz: any) => {
-    if (!confirm("Delete this quiz?")) return;
+    if (!confirm("Delete this quiz? This will also delete all student responses and grades.")) return;
     try {
-      const res = await fetch(`/api/quizzes/${quiz._id}`, { method: "DELETE" });
+      const res = await authenticatedFetch(`/api/quizzes/${quiz.id}`, { method: "DELETE" });
       if (res.ok) {
-        showMessage("Quiz deleted.");
+        const data = await res.json();
+        const message = data.deletedResponses > 0 
+          ? `Quiz deleted. Also deleted ${data.deletedResponses} student response(s).`
+          : "Quiz deleted.";
+        showMessage(message);
         // Immediately update the state
-        setQuizzes(prevQuizzes => prevQuizzes.filter(q => q._id !== quiz._id));
+        setQuizzes(prevQuizzes => prevQuizzes.filter(q => q.id !== quiz.id));
       } else {
         showMessage("Failed to delete quiz.");
       }
@@ -94,7 +133,7 @@ export default function TeacherDashboard() {
 
   const handlePublish = async (quiz: any, status: "published" | "draft") => {
     try {
-      const res = await fetch(`/api/quizzes/${quiz._id}/publish`, {
+      const res = await authenticatedFetch(`/api/quizzes/${quiz.id}/publish`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -103,7 +142,7 @@ export default function TeacherDashboard() {
         showMessage(status === "published" ? "Quiz published." : "Quiz unpublished.");
         // Immediately update the state
         setQuizzes(prevQuizzes => prevQuizzes.map(q => 
-          q._id === quiz._id ? { ...q, status } : q
+          q.id === quiz.id ? { ...q, status } : q
         ));
       } else {
         showMessage("Failed to update quiz status.");
@@ -120,7 +159,7 @@ export default function TeacherDashboard() {
 
   const handleViewResponses = async (quiz: any) => {
     setLoading(true);
-    const res = await fetch(`/api/quizzes/${quiz._id}/responses`);
+    const res = await authenticatedFetch(`/api/quizzes/${quiz.id}/responses`);
     if (res.ok) {
       const data = await res.json();
       setResponses(data.responses);
@@ -138,11 +177,11 @@ export default function TeacherDashboard() {
   const handleLessonDelete = async (lesson: any) => {
     if (!confirm("Delete this lesson?")) return;
     try {
-      const res = await fetch(`/api/lessons/${lesson._id}`, { method: "DELETE" });
+      const res = await authenticatedFetch(`/api/lessons/${lesson.id}`, { method: "DELETE" });
       if (res.ok) {
         showMessage("Lesson deleted.");
         // Immediately update the state
-        setLessons(prevLessons => prevLessons.filter(l => l._id !== lesson._id));
+        setLessons(prevLessons => prevLessons.filter(l => l.id !== lesson.id));
       } else {
         showMessage("Failed to delete lesson.");
       }
@@ -153,7 +192,7 @@ export default function TeacherDashboard() {
 
   const handleLessonPublish = async (lesson: any, status: "published" | "draft") => {
     try {
-      const res = await fetch(`/api/lessons/${lesson._id}`, {
+      const res = await authenticatedFetch(`/api/lessons/${lesson.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...lesson, status }),
@@ -162,7 +201,7 @@ export default function TeacherDashboard() {
         showMessage(status === "published" ? "Lesson published." : "Lesson unpublished.");
         // Immediately update the state
         setLessons(prevLessons => prevLessons.map(l => 
-          l._id === lesson._id ? { ...l, status } : l
+          l.id === lesson.id ? { ...l, status } : l
         ));
       } else {
         showMessage("Failed to update lesson status.");
@@ -183,7 +222,7 @@ export default function TeacherDashboard() {
 
   const handleAIQuizSave = async (quiz: any) => {
     try {
-      const res = await fetch("/api/quizzes", {
+      const res = await authenticatedFetch("/api/quizzes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -214,7 +253,29 @@ export default function TeacherDashboard() {
     if (refresh) fetchQuizzes();
   };
 
-  if (status === "loading" || !session || !(session.user && (session.user as any).role === "Teacher")) {
+  const handleCleanupOrphanedResponses = async () => {
+    if (!confirm('This will clean up any orphaned responses for deleted quizzes. Continue?')) return;
+    
+    setCleaningUp(true);
+    try {
+      const res = await authenticatedFetch('/api/admin/cleanup-orphaned-responses', {
+        method: 'POST'
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        showMessage(`Cleanup completed. Deleted ${data.deletedCount} orphaned responses.`);
+      } else {
+        showMessage('Failed to cleanup orphaned responses.');
+      }
+    } catch (error) {
+      showMessage('Failed to cleanup orphaned responses.');
+    } finally {
+      setCleaningUp(false);
+    }
+  };
+
+  if (authLoading || !user || userRole !== "Teacher") {
     return <div className="p-8">Loading...</div>;
   }
 
@@ -223,7 +284,7 @@ export default function TeacherDashboard() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Teacher Dashboard</h1>
         <button
-          onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+          onClick={signOut}
           className="btn btn-danger text-sm px-3 py-1"
         >
           Logout
@@ -236,7 +297,35 @@ export default function TeacherDashboard() {
             <button onClick={() => setShowAIQuizBuilder(true)} className="btn btn-info">+ Create AI Quiz</button>
             <button onClick={() => setShowAIBuilder(true)} className="btn btn-success">+ Create AI Lesson</button>
           </div>
-          {message && <span className="text-green-600 text-sm">{message}</span>}
+          <div className="flex items-center gap-2">
+            {message && <span className="text-green-600 text-sm">{message}</span>}
+            <button 
+              onClick={async () => {
+                setRefreshing(true);
+                try {
+                  if (activeTab === 'quizzes') {
+                    await fetchQuizzes();
+                  } else if (activeTab === 'lessons') {
+                    await fetchLessons();
+                  }
+                } finally {
+                  setRefreshing(false);
+                }
+              }}
+              disabled={refreshing}
+              className="btn btn-secondary text-sm px-3 py-1"
+            >
+              {refreshing ? '🔄 Refreshing...' : '🔄 Refresh'}
+            </button>
+            <button 
+              onClick={handleCleanupOrphanedResponses}
+              disabled={cleaningUp}
+              className="btn btn-warning text-sm px-3 py-1"
+              title="Clean up orphaned responses for deleted quizzes"
+            >
+              {cleaningUp ? '🧹 Cleaning...' : '🧹 Cleanup'}
+            </button>
+          </div>
         </div>
 
         <div className="mb-4">
@@ -273,7 +362,14 @@ export default function TeacherDashboard() {
         ) : showResponses && responsesQuiz ? (
           <div>
             <button onClick={() => setShowResponses(false)} className="mb-2 bg-gray-300 px-3 py-1 rounded">Back to Quizzes</button>
-            <QuizResponses responses={responses} quiz={responsesQuiz} />
+            <QuizResponses 
+              responses={responses} 
+              quiz={responsesQuiz} 
+              onClose={() => {
+                setShowResponses(false);
+                fetchQuizzes(); // Refresh to get updated grades
+              }}
+            />
           </div>
         ) : activeTab === 'quizzes' ? (
           <QuizList

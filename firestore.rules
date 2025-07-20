@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow authenticated users to read their own user document
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // Write operations are handled server-side for security
+    }
+    
+    // Allow authenticated users to read published lessons
+    match /lessons/{lessonId} {
+      allow read: if request.auth != null && resource.data.status == 'published';
+      // Write operations are handled server-side
+    }
+    
+    // Allow authenticated users to read published quizzes
+    match /quizzes/{quizId} {
+      allow read: if request.auth != null && resource.data.status == 'published';
+      // Write operations are handled server-side
+    }
+    
+    // Allow authenticated users to read/write their own responses
+    match /responses/{responseId} {
+      allow read, write: if request.auth != null && resource.data.student == request.auth.uid;
+    }
+    
+    // Default: deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+} 

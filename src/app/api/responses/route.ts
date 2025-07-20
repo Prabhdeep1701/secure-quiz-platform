@@ -1,20 +1,14 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import dbConnect from '@/lib/db';
-import Quiz from '@/models/Quiz';
-import Response from '@/models/Response';
+import { NextResponse, NextRequest } from 'next/server';
+import { requireAuth } from '@/lib/auth-middleware';
+import { db } from '@/lib/firebase-admin';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   console.log('Responses API called');
   
-  const session = await getServerSession(authOptions);
-  console.log('Session:', session);
+  const user = await requireAuth(req, ['Student']);
+  if (user instanceof NextResponse) return user; // Error response
   
-  if (!session || (session.user as any).role !== 'Student') {
-    console.log('Unauthorized - session or role issue');
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  console.log('User authenticated:', user.uid);
   
   const { quizId, answers } = await req.json();
   console.log('Request data:', { quizId, answers });
@@ -24,52 +18,45 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing quizId or answers' }, { status: 400 });
   }
   
-  await dbConnect();
-  const quiz = await Quiz.findOne({ link: quizId, status: 'published' });
-  console.log('Quiz found:', !!quiz);
+  // Find quiz by link
+  const quizzesRef = db.collection('quizzes');
+  const quizSnapshot = await quizzesRef.where('link', '==', quizId).where('status', '==', 'published').get();
+  console.log('Quiz found:', !quizSnapshot.empty);
   
-  if (!quiz) {
+  if (quizSnapshot.empty) {
     console.log('Quiz not found');
     return NextResponse.json({ error: 'Quiz not found' }, { status: 404 });
   }
   
-  // Prevent multiple submissions
-  const existing = await Response.findOne({ quiz: quiz._id, student: (session.user as any).id });
-  console.log('Existing response:', !!existing);
+  const quizDoc = quizSnapshot.docs[0];
+  const quiz = { id: quizDoc.id, ...quizDoc.data() } as any;
   
-  if (existing) {
+  // Prevent multiple submissions
+  const responsesRef = db.collection('responses');
+  const existingSnapshot = await responsesRef
+    .where('quiz', '==', quizDoc.id)
+    .where('student', '==', user.uid)
+    .get();
+  
+  console.log('Existing response:', !existingSnapshot.empty);
+  
+  if (!existingSnapshot.empty) {
     console.log('Already attempted');
     return NextResponse.json({ error: 'You have already attempted this quiz.' }, { status: 409 });
   }
   
-  // Auto-grade objective questions
-  let score = 0;
-  quiz.questions.forEach((q: any, i: number) => {
-    if (q.type === 'multiple-choice') {
-      // Single choice - compare numbers
-      const correct = q.correctAnswer;
-      const given = answers[i];
-      console.log(`Question ${i}: correct=${correct}, given=${given}`);
-      if (correct === given) score++;
-    } else if (q.type === 'checkbox') {
-      // Multiple choice - compare arrays
-      const correct = (q.correctAnswers || []).sort().join(',');
-      const given = Array.isArray(answers[i]) ? answers[i].sort().join(',') : String(answers[i]);
-      console.log(`Question ${i}: correct=${correct}, given=${given}`);
-      if (correct && correct === given) score++;
-    }
-  });
-  
-  console.log('Final score:', score);
-  
-  const response = await Response.create({
-    quiz: quiz._id,
-    student: (session.user as any).id,
+  // Store response without auto-grading
+  const responseRef = await responsesRef.add({
+    quiz: quizDoc.id,
+    student: user.uid,
     answers,
     submittedAt: new Date(),
-    score,
+    // No auto-score - will be graded manually by teacher
   });
   
-  console.log('Response created:', response._id);
-  return NextResponse.json({ message: 'Response submitted', score });
+  console.log('Response created:', responseRef.id);
+  return NextResponse.json({ 
+    message: 'Your quiz has been submitted successfully! Your grades will be published shortly.',
+    submitted: true
+  });
 } 

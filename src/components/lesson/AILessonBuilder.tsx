@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/ToastContext';
+import { authenticatedFetch } from '@/lib/api-client';
 
 interface AILessonBuilderProps {
   onClose: () => void;
@@ -23,7 +24,7 @@ export default function AILessonBuilder({ onClose }: AILessonBuilderProps) {
 
     setGenerating(true);
     try {
-      const res = await fetch('/api/lessons/ai-generate', {
+      const res = await authenticatedFetch('/api/lessons/ai-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
@@ -54,7 +55,7 @@ export default function AILessonBuilder({ onClose }: AILessonBuilderProps) {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/lessons', {
+      const res = await authenticatedFetch('/api/lessons', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

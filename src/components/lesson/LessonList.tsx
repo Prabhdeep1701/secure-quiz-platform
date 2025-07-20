@@ -1,49 +1,41 @@
-import React from "react";
-
-interface Lesson {
-  _id: string;
-  title: string;
-  description?: string;
-  status: "draft" | "published";
-  aiGenerated: boolean;
-  createdAt: string;
-}
+import React from 'react';
 
 interface LessonListProps {
-  lessons: Lesson[];
-  onEdit: (lesson: Lesson) => void;
-  onDelete: (lesson: Lesson) => void;
-  onPublish: (lesson: Lesson, status: "published" | "draft") => void;
-  onViewAnalytics?: (lessonId: string) => void;
+  lessons: any[];
+  onEdit: (lesson: any) => void;
+  onDelete: (lesson: any) => void;
+  onPublish: (lesson: any, status: "published" | "draft") => void;
+  onViewAnalytics: (lessonId: string) => void;
 }
 
 export default function LessonList({ lessons, onEdit, onDelete, onPublish, onViewAnalytics }: LessonListProps) {
+  if (lessons.length === 0) {
+    return <p className="text-gray-500">No lessons created yet.</p>;
+  }
+
   return (
     <div className="space-y-4">
-      {lessons.length === 0 && <div className="text-gray-500">No lessons yet.</div>}
-      {lessons.map((lesson) => (
-        <div key={lesson._id} className="flex items-center justify-between bg-gray-50 border rounded p-4">
-          <div>
-            <div className="font-semibold text-lg">{lesson.title}</div>
-            <div className="text-sm text-gray-600 mb-1">{lesson.description}</div>
-            <div className="text-xs text-gray-500">
-              Status: {lesson.status} 
-              {lesson.aiGenerated && <span className="ml-2 text-blue-600">• AI Generated</span>}
+      {lessons.map(lesson => (
+        <div key={lesson.id} className="flex items-center justify-between bg-gray-50 border rounded p-4">
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg">{lesson.title}</h3>
+            {lesson.description && (
+              <p className="text-gray-600 text-sm mt-1">{lesson.description}</p>
+            )}
+            <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+              <span className={`px-2 py-1 rounded ${lesson.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                {lesson.status}
+              </span>
+              {lesson.aiGenerated && <span className="text-blue-600">AI Generated</span>}
             </div>
           </div>
           <div className="flex gap-2">
             <button onClick={() => onEdit(lesson)} className="btn btn-primary">Edit</button>
+            <button onClick={() => onPublish(lesson, lesson.status === 'published' ? 'draft' : 'published')} className="btn btn-info">
+              {lesson.status === 'published' ? 'Unpublish' : 'Publish'}
+            </button>
+            <button onClick={() => onViewAnalytics(lesson.id)} className="btn btn-info">Analytics</button>
             <button onClick={() => onDelete(lesson)} className="btn btn-danger">Delete</button>
-            {lesson.status === "published" && onViewAnalytics && (
-              <button onClick={() => onViewAnalytics(lesson._id)} className="btn btn-info">Analytics</button>
-            )}
-            {lesson.status === "draft" ? (
-              <button onClick={() => onPublish(lesson, "published")}
-                className="btn btn-success">Publish</button>
-            ) : (
-              <button onClick={() => onPublish(lesson, "draft")}
-                className="btn btn-warning">Unpublish</button>
-            )}
           </div>
         </div>
       ))}
