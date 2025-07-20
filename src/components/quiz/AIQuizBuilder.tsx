@@ -38,7 +38,7 @@ export default function AIQuizBuilder({ onClose, onSave }: AIQuizBuilderProps) {
         const errorData = await res.json();
         setError(errorData.error || "Failed to generate quiz");
       }
-    } catch (_err) {
+    } catch (_) {
       setError("Failed to generate quiz");
     } finally {
       setLoading(false);

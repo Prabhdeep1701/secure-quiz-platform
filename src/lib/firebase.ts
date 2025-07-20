@@ -13,8 +13,8 @@ const firebaseConfig = {
 
 // Validate configuration
 const missingConfig = Object.entries(firebaseConfig)
-  .filter(([_key, value]) => !value)
-  .map(([_key]) => _key);
+  .filter(([_]) => !_)
+  .map(([_]) => _);
 
 if (missingConfig.length > 0) {
   console.error('Missing Firebase configuration:', missingConfig);

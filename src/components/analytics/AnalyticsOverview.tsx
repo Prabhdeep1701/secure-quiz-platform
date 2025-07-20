@@ -55,7 +55,7 @@ export default function AnalyticsOverview({ onViewLessonAnalytics }: AnalyticsOv
       } else {
         setError('Failed to load analytics overview');
       }
-    } catch (_err) {
+    } catch (_) {
       setError('Failed to load analytics overview');
     } finally {
       setLoading(false);

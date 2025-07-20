@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/components/ui/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -20,16 +20,7 @@ export default function LessonViewerPage({ params }: { params: Promise<{ id: str
     });
   }, [params]);
 
-  useEffect(() => {
-    if (authLoading || !lessonId) return;
-    if (!user || userRole !== "Student") {
-      router.replace("/auth/signin");
-      return;
-    }
-    fetchLesson();
-  }, [user, userRole, authLoading, lessonId, router, fetchLesson]);
-
-  async function fetchLesson() {
+  const fetchLesson = useCallback(async () => {
     setLoading(true);
     setError("");
     const res = await fetch(`/api/student/lessons`);
@@ -47,7 +38,16 @@ export default function LessonViewerPage({ params }: { params: Promise<{ id: str
       setError("Failed to load lesson.");
     }
     setLoading(false);
-  }
+  }, [lessonId, trackLessonView]);
+
+  useEffect(() => {
+    if (authLoading || !lessonId) return;
+    if (!user || userRole !== "Student") {
+      router.replace("/auth/signin");
+      return;
+    }
+    fetchLesson();
+  }, [user, userRole, authLoading, lessonId, router, fetchLesson]);
 
   const trackLessonView = async () => {
     if (hasTracked) return;

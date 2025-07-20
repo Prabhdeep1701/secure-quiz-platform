@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
   }
   
   const quizDoc = quizSnapshot.docs[0];
-  const quiz = { id: quizDoc.id, ...quizDoc.data() } as any;
   
   // Prevent multiple submissions
   const responsesRef = db.collection('responses');

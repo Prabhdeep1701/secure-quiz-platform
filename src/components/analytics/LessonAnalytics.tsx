@@ -30,24 +30,23 @@ export default function LessonAnalytics({ lessonId, onClose }: LessonAnalyticsPr
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/lessons/${lessonId}/analytics`);
-      if (res.ok) {
-        const analyticsData = await res.json();
-        setData(analyticsData);
-      } else {
-        setError('Failed to load analytics');
-      }
-    } catch (_err) {
-      setError('Failed to load analytics');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/lessons/${lessonId}/analytics`);
+        if (res.ok) {
+          const analyticsData = await res.json();
+          setData(analyticsData);
+        } else {
+          setError('Failed to load analytics');
+        }
+      } catch (_) {
+        setError('Failed to load analytics');
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchAnalytics();
   }, [lessonId]);
 

@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+// import { useRouter } from 'next/navigation';
 import { authenticatedFetch } from '@/lib/api-client';
 import { useToast } from '@/components/ui/ToastContext';
 
@@ -28,7 +28,7 @@ export default function QuizAttempt({ quiz, onClose }: QuizAttemptProps) {
   const { showToast } = useToast();
   const [autoSubmitted, setAutoSubmitted] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     setSubmitting(true);
     // setError('');
 
@@ -60,13 +60,13 @@ export default function QuizAttempt({ quiz, onClose }: QuizAttemptProps) {
         showToast(errorData.error || 'Failed to submit quiz', 'error');
         // setError(errorData.error || 'Failed to submit quiz');
       }
-    } catch (_err) {
+    } catch (_) {
       showToast('Failed to submit quiz', 'error');
       // setError('Failed to submit quiz');
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [quiz.link, answers, autoSubmitted, onClose, showToast]);
 
   // Auto-submit if window loses focus in kiosk mode
   useEffect(() => {

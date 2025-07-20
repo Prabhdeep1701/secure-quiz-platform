@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/components/ui/AuthContext";
 import { useRouter } from "next/navigation";
 import QuizAttempt from "@/components/quiz/QuizAttempt";
@@ -22,16 +22,7 @@ export default function QuizAttemptPage({ params }: { params: Promise<{ quizId: 
   const [attemptStarted, setAttemptStarted] = useState(false);
   const unwrappedParams = React.use(params);
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user || userRole !== "Student") {
-      router.replace("/auth/signin");
-      return;
-    }
-    fetchQuiz();
-  }, [user, userRole, authLoading, router]);
-
-  async function fetchQuiz() {
+  const fetchQuiz = useCallback(() => {
     setLoading(true);
     setError("");
     const res = await fetch(`/api/quizzes/${unwrappedParams.quizId}`);
@@ -42,7 +33,15 @@ export default function QuizAttemptPage({ params }: { params: Promise<{ quizId: 
       setError("Quiz not found or unavailable.");
     }
     setLoading(false);
-  }
+  }, []);
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user || userRole !== "Student") {
+      router.replace("/auth/signin");
+      return;
+    }
+    fetchQuiz();
+  }, [user, userRole, authLoading, router, fetchQuiz]);
 
   const handleStartAttempt = () => {
     setAttemptStarted(true);
