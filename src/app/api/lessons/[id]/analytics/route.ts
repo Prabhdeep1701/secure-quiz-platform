@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
     
     const lessonData = lessonDoc.data();
-    if (!lessonData || lessonData.author !== user.id) {
+    if (!lessonData || lessonData.author !== user.uid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
