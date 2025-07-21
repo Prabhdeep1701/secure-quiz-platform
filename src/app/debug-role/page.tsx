@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/ui/AuthContext';
 import { getIdToken } from 'firebase/auth';
 
@@ -8,7 +8,7 @@ export default function DebugRolePage() {
   const [debugInfo, setDebugInfo] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const checkUserRole = async () => {
+  const checkUserRole = useCallback(async () => {
     if (!user) return;
     
     setIsLoading(true);
@@ -70,7 +70,7 @@ export default function DebugRolePage() {
 
     setDebugInfo(info);
     setIsLoading(false);
-  };
+  }, [user, userRole]);
 
   const forceRefreshRole = async () => {
     if (!user) return;
