@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { authenticatedFetch } from '@/lib/api-client';
 
 type QuestionType = 'multiple-choice' | 'checkbox' | 'short-answer' | 'paragraph';
 
@@ -123,9 +124,8 @@ export default function QuizBuilder({ quiz, onClose }: QuizBuilderProps) {
     const payload = { title, description, questions, status };
     const method = quiz ? 'PUT' : 'POST';
     const url = quiz ? `/api/quizzes/${quiz.id}` : '/api/quizzes';
-    const res = await fetch(url, {
+    const res = await authenticatedFetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
     if (res.ok) {
