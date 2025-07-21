@@ -159,10 +159,10 @@ export default function TestTeacherPage() {
       <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded">
         <h3 className="font-bold text-yellow-800 mb-2">Instructions:</h3>
         <ol className="text-sm text-yellow-700 space-y-1">
-          <li>1. Click "Test Teacher Registration" to create a new teacher account</li>
+          <li>1. Click &quot;Test Teacher Registration&quot; to create a new teacher account</li>
           <li>2. Watch the logs to see what happens during registration</li>
           <li>3. Check if the role is set correctly</li>
-          <li>4. If role is correct, try "Force Redirect" button</li>
+          <li>4. If role is correct, try &quot;Force Redirect&quot; button</li>
           <li>5. Share the logs with me to help debug the issue</li>
         </ol>
       </div>

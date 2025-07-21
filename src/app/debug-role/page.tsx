@@ -105,7 +105,7 @@ export default function DebugRolePage() {
     if (user && !loading) {
       checkUserRole();
     }
-  }, [user, loading]);
+  }, [user, loading, checkUserRole]);
 
   return (
     <div className="p-8 max-w-4xl mx-auto">

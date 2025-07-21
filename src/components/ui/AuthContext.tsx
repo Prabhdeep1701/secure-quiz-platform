@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Error fetching user role:', error);
     }
-  }, []);
+  }, [manualRole]);
 
   const createUserProfile = async (user: User) => {
     try {

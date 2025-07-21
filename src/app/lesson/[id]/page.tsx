@@ -20,6 +20,21 @@ export default function LessonViewerPage({ params }: { params: Promise<{ id: str
     });
   }, [params]);
 
+  const trackLessonView = useCallback(async () => {
+    if (hasTracked) return;
+    try {
+      const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+      await fetch(`/api/lessons/${lessonId}/analytics/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ timeSpent, completed: false }),
+      });
+      setHasTracked(true);
+    } catch (error) {
+      console.error('Failed to track lesson view:', error);
+    }
+  }, [hasTracked, lessonId, startTime]);
+
   const fetchLesson = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -48,22 +63,6 @@ export default function LessonViewerPage({ params }: { params: Promise<{ id: str
     }
     fetchLesson();
   }, [user, userRole, authLoading, lessonId, router, fetchLesson]);
-
-  const trackLessonView = async () => {
-    if (hasTracked) return;
-    
-    try {
-      const timeSpent = Math.floor((Date.now() - startTime) / 1000);
-      await fetch(`/api/lessons/${lessonId}/analytics/track`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ timeSpent, completed: false }),
-      });
-      setHasTracked(true);
-    } catch (error) {
-      console.error('Failed to track lesson view:', error);
-    }
-  };
 
   const trackLessonCompletion = async () => {
     try {

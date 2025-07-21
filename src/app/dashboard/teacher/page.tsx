@@ -126,7 +126,7 @@ export default function TeacherDashboard() {
       } else {
         showMessage("Failed to delete quiz.");
       }
-    } catch (error) {
+    } catch {
       showMessage("Failed to delete quiz.");
     }
   };
@@ -147,7 +147,7 @@ export default function TeacherDashboard() {
       } else {
         showMessage("Failed to update quiz status.");
       }
-    } catch (error) {
+    } catch {
       showMessage("Failed to update quiz status.");
     }
   };
@@ -185,7 +185,7 @@ export default function TeacherDashboard() {
       } else {
         showMessage("Failed to delete lesson.");
       }
-    } catch (error) {
+    } catch {
       showMessage("Failed to delete lesson.");
     }
   };
@@ -206,7 +206,7 @@ export default function TeacherDashboard() {
       } else {
         showMessage("Failed to update lesson status.");
       }
-    } catch (error) {
+    } catch {
       showMessage("Failed to update lesson status.");
     }
   };
@@ -242,7 +242,7 @@ export default function TeacherDashboard() {
       } else {
         showMessage("Failed to save quiz.");
       }
-    } catch (error) {
+    } catch {
       showMessage("Failed to save quiz.");
     }
   };
@@ -268,7 +268,7 @@ export default function TeacherDashboard() {
       } else {
         showMessage('Failed to cleanup orphaned responses.');
       }
-    } catch (error) {
+    } catch {
       showMessage('Failed to cleanup orphaned responses.');
     } finally {
       setCleaningUp(false);

@@ -122,11 +122,11 @@ export default function VerifyAuthPage() {
         <ol className="list-decimal list-inside text-yellow-700 space-y-1">
           <li>Go to <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Firebase Console</a></li>
           <li>Select your project: <strong>lemma-quiz-platform</strong></li>
-          <li>Click <strong>"Authentication"</strong> in the left sidebar</li>
-          <li>Click <strong>"Get started"</strong> if Authentication is not enabled</li>
-          <li>Go to <strong>"Sign-in method"</strong> tab</li>
-          <li>Enable <strong>"Email/Password"</strong> and <strong>"Google"</strong></li>
-          <li>Click <strong>"Save"</strong> for each method</li>
+          <li>Click <strong>&quot;Authentication&quot;</strong> in the left sidebar</li>
+          <li>Click <strong>&quot;Get started&quot;</strong> if Authentication is not enabled</li>
+          <li>Go to <strong>&quot;Sign-in method&quot;</strong> tab</li>
+          <li>Enable <strong>&quot;Email/Password&quot;</strong> and <strong>&quot;Google&quot;</strong></li>
+          <li>Click <strong>&quot;Save&quot;</strong> for each method</li>
         </ol>
       </div>
     </div>

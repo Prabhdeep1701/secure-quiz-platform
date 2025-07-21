@@ -35,7 +35,7 @@ export default function QuizAttemptPage({ params }: { params: Promise<{ quizId: 
       setError("Quiz not found or unavailable.");
     }
     setLoading(false);
-  }, []);
+  }, [unwrappedParams.quizId]);
   useEffect(() => {
     if (authLoading) return;
     if (!user || userRole !== "Student") {
