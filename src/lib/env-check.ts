@@ -23,7 +23,7 @@ export function checkEnvironmentVariables() {
 
   const missingVars = Object.entries(requiredVars)
     .filter(([key, value]) => !value)
-    .map(([key]) => key);
+    .map(([k]) => k);
 
   if (missingVars.length > 0) {
     console.error('❌ Missing environment variables:');

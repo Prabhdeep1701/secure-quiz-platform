@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     // Get all lessons by the teacher
     const lessonsRef = db.collection('lessons');
     const lessonsSnapshot = await lessonsRef
-      .where('author', '==', user.id)
+      .where('author', '==', user.uid)
       .get();
     
     const lessons = lessonsSnapshot.docs.map(doc => ({

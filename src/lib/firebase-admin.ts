@@ -12,7 +12,7 @@ const requiredEnvVars = {
 // Validate environment variables
 const missingVars = Object.entries(requiredEnvVars)
   .filter(([key, value]) => !value)
-  .map(([key]) => key);
+  .map(([k]) => k);
 
 if (missingVars.length > 0) {
   throw new Error(
