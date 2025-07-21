@@ -87,7 +87,7 @@ export default function QuizResponses({ responses, quiz, onClose }: QuizResponse
       } else {
         alert('Failed to save grade');
       }
-    } catch (_) {
+    } catch {
       alert('Failed to save grade');
     } finally {
       setLoading(false);
@@ -172,7 +172,7 @@ export default function QuizResponses({ responses, quiz, onClose }: QuizResponse
             <p className="text-gray-500">No responses yet.</p>
           ) : (
             <div className="space-y-6">
-              {responses.map((response, responseIndex) => (
+              {responses.map((response) => (
                 <div key={response.id} className="border rounded-lg p-4 bg-gray-50">
                   <div className="flex justify-between items-start mb-4">
                     <div>

@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { 
   User, 
   signInWithPopup, 
@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [manualRole, setManualRole] = useState<string | null>(null);
 
-  const fetchUserRole = async (user: User) => {
+  const fetchUserRole = useCallback(async (user: User) => {
     try {
       const token = await getIdToken(user);
       console.log('Got ID token, length:', token.length);
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Error fetching user role:', error);
     }
-  };
+  }, []);
 
   const createUserProfile = async (user: User) => {
     try {
@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return unsubscribe;
-  }, [isRegistering]);
+  }, [isRegistering, fetchUserRole]);
 
   const signInWithGoogle = async () => {
     try {

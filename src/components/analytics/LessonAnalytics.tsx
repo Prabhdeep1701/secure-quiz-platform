@@ -41,7 +41,7 @@ export default function LessonAnalytics({ lessonId, onClose }: LessonAnalyticsPr
         } else {
           setError('Failed to load analytics');
         }
-      } catch (_) {
+      } catch {
         setError('Failed to load analytics');
       } finally {
         setLoading(false);

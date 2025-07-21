@@ -40,7 +40,7 @@ export default function AILessonBuilder({ onClose }: AILessonBuilderProps) {
         const error = await res.json();
         showToast(error.error || 'Failed to generate lesson', 'error');
       }
-    } catch (_) {
+    } catch {
       showToast('Failed to generate lesson', 'error');
     } finally {
       setGenerating(false);
@@ -74,7 +74,7 @@ export default function AILessonBuilder({ onClose }: AILessonBuilderProps) {
         const error = await res.json();
         showToast(error.error || 'Failed to save lesson', 'error');
       }
-    } catch (_) {
+    } catch {
       showToast('Failed to save lesson', 'error');
     } finally {
       setLoading(false);

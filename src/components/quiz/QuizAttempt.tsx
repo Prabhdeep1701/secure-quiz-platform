@@ -60,7 +60,7 @@ export default function QuizAttempt({ quiz, onClose }: QuizAttemptProps) {
         showToast(errorData.error || 'Failed to submit quiz', 'error');
         // setError(errorData.error || 'Failed to submit quiz');
       }
-    } catch (_) {
+    } catch {
       showToast('Failed to submit quiz', 'error');
       // setError('Failed to submit quiz');
     } finally {
