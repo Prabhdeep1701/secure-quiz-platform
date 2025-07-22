@@ -290,11 +290,11 @@ export default function TeacherDashboard() {
           Logout
         </button>
       </div>
-      <div className="bg-white rounded shadow p-4">
+      <div className="bg-white rounded shadow p-4 relative">
         <div className="mb-4 flex justify-between items-center">
           <div className="flex gap-2">
-            <button onClick={handleCreate} className="btn btn-primary">+ Create New Quiz</button>
-            <button onClick={() => setShowAIQuizBuilder(true)} className="btn btn-info">+ Create AI Quiz</button>
+            <button onClick={() => { setShowAIQuizBuilder(false); handleCreate(); }} className="btn btn-primary">+ Create New Quiz</button>
+            <button onClick={() => { setShowBuilder(false); setShowAIQuizBuilder(true); }} className="btn btn-info">+ Create AI Quiz</button>
             <button onClick={() => setShowAIBuilder(true)} className="btn btn-success">+ Create AI Lesson</button>
           </div>
           <div className="flex items-center gap-2">
@@ -351,6 +351,7 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
+        {/* Restore original conditional rendering for builders/modals */}
         {showBuilder ? (
           <QuizBuilder quiz={editQuiz} onClose={handleBuilderClose} />
         ) : showAIBuilder ? (
