@@ -293,9 +293,9 @@ export default function TeacherDashboard() {
       <div className="bg-white rounded shadow p-4 relative">
         <div className="mb-4 flex justify-between items-center">
           <div className="flex gap-2">
-            <button onClick={handleCreate} className="btn btn-primary">+ Create New Quiz</button>
-            <button onClick={() => setShowAIQuizBuilder(true)} className="btn btn-info">+ Create AI Quiz</button>
-            <button onClick={() => setShowAIBuilder(true)} className="btn btn-success">+ Create AI Lesson</button>
+            <button onClick={() => { setShowAIQuizBuilder(false); setShowAIBuilder(false); handleCreate(); }} className="btn btn-primary">+ Create New Quiz</button>
+            <button onClick={() => { setShowBuilder(false); setShowAIBuilder(false); setShowAIQuizBuilder(true); }} className="btn btn-info">+ Create AI Quiz</button>
+            <button onClick={() => { setShowBuilder(false); setShowAIQuizBuilder(false); setShowAIBuilder(true); }} className="btn btn-success">+ Create AI Lesson</button>
           </div>
           <div className="flex items-center gap-2">
             {message && <span className="text-green-600 text-sm">{message}</span>}
@@ -351,17 +351,10 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        {/* Sidebar QuizBuilder overlay */}
-        {showBuilder && (
-          <div className="fixed top-0 right-0 h-full w-full z-50 pointer-events-none">
-            <div className="absolute top-0 right-0 h-full w-[420px] bg-white shadow-2xl border-l border-gray-200 p-4 pointer-events-auto overflow-y-auto">
-              <QuizBuilder quiz={editQuiz} onClose={handleBuilderClose} />
-            </div>
-          </div>
-        )}
-
-        {/* Main dashboard content remains interactive */}
-        {showAIBuilder ? (
+        {/* Only one builder/modal visible at a time, no sidebar */}
+        {showBuilder ? (
+          <QuizBuilder quiz={editQuiz} onClose={handleBuilderClose} />
+        ) : showAIBuilder ? (
           <AILessonBuilder onClose={() => setShowAIBuilder(false)} />
         ) : showAIQuizBuilder ? (
           <AIQuizBuilder onClose={() => setShowAIQuizBuilder(false)} onSave={handleAIQuizSave} />
