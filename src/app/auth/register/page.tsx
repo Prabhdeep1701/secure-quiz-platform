@@ -60,53 +60,58 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4">
-        <h1 className="text-2xl font-bold mb-2 text-center">Register</h1>
-        {error && <div className="text-red-600 text-sm text-center">{error}</div>}
-        {success && <div className="text-green-600 text-sm text-center">{success}</div>}
-        
-        <form onSubmit={handleEmailSubmit} className="space-y-4">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-100 via-stone-50 to-teal-100">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md flex flex-col items-center">
+        {/* Accent Icon */}
+        <div className="w-16 h-16 bg-gradient-to-br from-purple-200 via-teal-200 to-amber-100 rounded-full flex items-center justify-center mb-6 shadow-sm backdrop-blur-sm">
+          <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-bold mb-2 text-center text-stone-800">Register</h1>
+        {error && <div className="text-red-600 text-sm text-center mb-2">{error}</div>}
+        {success && <div className="text-green-600 text-sm text-center mb-2">{success}</div>}
+        <form onSubmit={handleEmailSubmit} className="space-y-4 w-full">
           <div>
-            <label className="block text-sm font-medium mb-1">Name</label>
+            <label className="block text-sm font-medium mb-1 text-stone-700">Name</label>
             <input 
               name="name" 
               type="text" 
               required 
               value={form.name} 
               onChange={handleChange} 
-              className="w-full border rounded px-3 py-2" 
+              className="w-full border rounded px-3 py-2 bg-stone-50 focus:outline-none focus:ring-2 focus:ring-purple-300" 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
+            <label className="block text-sm font-medium mb-1 text-stone-700">Email</label>
             <input 
               name="email" 
               type="email" 
               required 
               value={form.email} 
               onChange={handleChange} 
-              className="w-full border rounded px-3 py-2" 
+              className="w-full border rounded px-3 py-2 bg-stone-50 focus:outline-none focus:ring-2 focus:ring-purple-300" 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
+            <label className="block text-sm font-medium mb-1 text-stone-700">Password</label>
             <input 
               name="password" 
               type="password" 
               required 
               value={form.password} 
               onChange={handleChange} 
-              className="w-full border rounded px-3 py-2" 
+              className="w-full border rounded px-3 py-2 bg-stone-50 focus:outline-none focus:ring-2 focus:ring-purple-300" 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Role</label>
+            <label className="block text-sm font-medium mb-1 text-stone-700">Role</label>
             <select 
               name="role" 
               value={form.role} 
               onChange={handleChange} 
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-3 py-2 bg-stone-50 focus:outline-none focus:ring-2 focus:ring-purple-300"
             >
               <option value="Teacher">Teacher</option>
               <option value="Student">Student</option>
@@ -115,25 +120,23 @@ export default function RegisterPage() {
           <button 
             type="submit" 
             disabled={loading} 
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition disabled:opacity-50"
+            className="w-full bg-purple-500 text-white py-2 rounded font-semibold hover:bg-purple-600 transition disabled:opacity-50 shadow"
           >
             {loading ? "Registering..." : "Register with Email"}
           </button>
         </form>
-
-        <div className="relative">
+        <div className="relative w-full my-4">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
+            <div className="w-full border-t border-stone-200" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+            <span className="px-2 bg-white text-stone-400">Or continue with</span>
           </div>
         </div>
-
         <button 
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded hover:bg-gray-50 transition disabled:opacity-50 flex items-center justify-center space-x-2"
+          className="w-full bg-white border border-teal-300 text-teal-700 py-2 rounded hover:bg-teal-50 transition disabled:opacity-50 flex items-center justify-center space-x-2 mb-2 shadow"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -143,9 +146,8 @@ export default function RegisterPage() {
           </svg>
           <span>Register with Google</span>
         </button>
-
         <div className="text-sm text-center mt-4">
-          Already have an account? <a href="/auth/signin" className="text-blue-600 hover:underline">Sign in</a>
+          Already have an account? <a href="/auth/signin" className="text-purple-600 hover:underline">Sign in</a>
         </div>
       </div>
     </main>
